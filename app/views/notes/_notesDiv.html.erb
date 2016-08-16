@@ -1,0 +1,16 @@
+<div id="noteDiv<%= @note.id %>">
+<form method="post" action='/notes/<%= @note.id %>' id='updateForm<%= @note.id %>' data-remote="false">
+<input type="text" name="note[title]" value='<%= @note.title %>'>
+<br>
+<textarea name="note[description]"><%= @note.description %></textarea>
+</br>
+	<input name="authenticity_token" value="<%= form_authenticity_token %>" type="hidden">
+    <input type="hidden" name="_method" value="PATCH">
+	<input type="submit" value="Submit!">
+</form>
+<form method="post" action='/notes/<%= @note.id %>' id='deleteForm<%= @note.id %>' data-remote="false">
+	<input name="authenticity_token" value="<%= form_authenticity_token %>" type="hidden">
+	<input type="hidden" name="_method" value="delete">
+	<input type="submit" value="Delete">
+</form>
+</div>

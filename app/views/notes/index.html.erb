@@ -1,0 +1,93 @@
+<script type="text/javascript">
+$(document).ready(function(){
+	$('#addNoteForm').click(function(){
+		var htmlSTR = "<form method='post' action='/notes' id='newNote' data-remote='false'><input type='text' name='note[title]' placeholder='title' id='newNoteTitle'><br><textarea name='note[description]' id='newNoteDesc'></textarea></br><input name='authenticity_token' value='<%= form_authenticity_token %>'type='hidden'><input type='submit' value='Submit!'></form>";
+		$('#newFormDiv').append(htmlSTR);
+		console.log('clicked');
+	});
+});
+	$(document).on('submit', '#newNote', function(){
+	    var valuesToSubmit = $(this).serialize();
+	    $.ajax({
+	    	cache: true,
+	        type: "POST",
+	        url: "/notes", //sumbits it to the given url of the form
+	        data: valuesToSubmit,
+	        dataType: "json" // you want a difference between normal and ajax-calls, and json is standard
+	    }).success(function(json){
+	    	console.log(json['id']);
+	    	$.ajax({
+	    	type: "GET",
+	    	url: "/notes/" + json['id'],
+	    	success: function(data){
+	    		// console.log(data)
+	    		console.log("success");
+	    		$('#newNoteTitle').val('');
+	    		$('#newNoteDesc').val('');
+	    		$('#appendDiv').append(data);
+	    	}
+	    	});
+	    });
+	    return false; // prevents normal behaviour    
+});
+</script>
+<% @notes.each do |n| %>
+<script type="text/javascript">
+	$(document).on('submit', '#updateForm<%= n.id %>', function(){
+		console.log('<%= n.id %>');
+	    var valuesToSubmit = $(this).serialize();
+	    $.ajax({
+	        type: "PATCH",
+	        url: "/notes/<%= n.id %>", //sumbits it to the given url of the form
+	        data: valuesToSubmit,
+	        dataType: "json" // you want a difference between normal and ajax-calls, and json is standard
+	    }).success(function(json){
+	    	$.ajax({
+	    	type: "GET",
+	    	url: "/notes/<%= n.id %>",
+	    	success: function(data){
+	    		// console.log(data)
+	    		console.log("success");
+	    		$('#noteDiv<%= n.id %>').html(data);
+	    	}
+	    	});
+	    });
+	    return false; // prevents normal behaviour    
+});
+$(document).on('submit', '#deleteForm<%= n.id %>', function() {
+      var valuesToSubmit = $(this).serialize();
+      $.ajax({
+          type: "DELETE",
+          url: "/notes/<%= n.id %>", //sumbits it to the given url of the form
+          data: valuesToSubmit,
+          dataType: "json"
+          }).success(function(json){
+	    	$('#noteDiv<%= n.id %>').html('');
+      });
+      return false; // prevents normal behaviour
+  });
+</script>
+<div id="wrapper" data-no-turbolink>
+<div id="noteDiv<%= n.id %>">
+<form method="post" action='/notes/<%= n.id %>' id='updateForm<%= n.id %>' data-remote="false">
+<input type="text" name="note[title]" value='<%= n.title %>'>
+<br>
+<textarea name="note[description]"><%= n.description %></textarea>
+</br>
+	<input name="authenticity_token" value="<%= form_authenticity_token %>" type="hidden">
+    <input type="hidden" name="_method" value="PATCH">
+	<input type="submit" value="Submit!">
+</form>
+<form method="post" action='/notes/<%= n.id %>' id='deleteForm<%= n.id %>' data-remote="false">
+	<input name="authenticity_token" value="<%= form_authenticity_token %>" type="hidden">
+	<input type="hidden" name="_method" value="delete">
+	<input type="submit" value="Delete">
+</form>
+</div>
+<% end %>
+<div id="appendDiv" data-no-turbolink>
+</div>
+<div id="newFormDiv" data-no-turbolink>
+</div>
+<button id="addNoteForm">Add New Note</button>
+</div>
